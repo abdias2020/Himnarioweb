@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Himnario Digital</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #3498db;
+      color: #fff;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      text-align: center;
+    }
+    .menu-btn {
+      font-size: 22px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #fff;
+      position: absolute;
+      left: 15px;
+    }
+    /* Drawer lateral */
+    .drawer {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #2c3e50;
+      overflow-x: hidden;
+      transition: 0.3s;
+      padding-top: 60px;
+      z-index: 1000;
+    }
+    .drawer a {
+      padding: 12px 20px;
+      text-decoration: none;
+      font-size: 18px;
+      color: #ecf0f1;
+      display: block;
+      transition: 0.2s;
+    }
+    .drawer a:hover {
+      background: #34495e;
+    }
+    .drawer .closebtn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 25px;
+      background: none;
+      border: none;
+      color: #ecf0f1;
+      cursor: pointer;
+    }
+    main {
+      padding: 20px;
+    }
+    h2 {
+      color: #34495e;
+      margin-bottom: 15px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    li {
+      margin: 0;
+    }
+    a.hymn-link {
+      display: block;
+      background: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-decoration: none;
+      color: #2c3e50;
+      font-weight: 500;
+      transition: transform 0.2s, background 0.3s;
+    }
+    a.hymn-link:hover {
+      background: #ecf6ff;
+      transform: translateY(-2px);
+    }
+    .back {
+      margin: 10px 0;
+      display: inline-block;
+      background: #e74c3c;
+      color: #fff !important;
+      padding: 8px 14px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: background 0.3s;
+      text-decoration: none;
+    }
+    .back:hover {
+      background: #c0392b;
+    }
+    .hymn-lyrics {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      line-height: 1.5;
+    }
+    audio {
+      margin-top: 15px;
+      width: 100%;
+      outline: none;
+    }
+    .no-audio {
+      margin-top: 15px;
+      color: #e74c3c;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="menu-btn" onclick="openDrawer()">☰</button>
+    <h1>🎶 Himnario Digital</h1>
+  </header>
+
+  <div id="drawer" class="drawer">
+    <button class="closebtn" onclick="closeDrawer()">×</button>
+    <a href="index.html">🏠 Volver al Inicio</a>
+  </div>
+
+  <main>
+    <div id="content">Cargando himnario...</div>
+  </main>
+
+  <script>
+    // Drawer
+    function openDrawer() { document.getElementById("drawer").style.width = "250px"; }
+    function closeDrawer() { document.getElementById("drawer").style.width = "0"; }
+
+    // Himnos
+    const url = "https://raw.githubusercontent.com/abdias2020/himnos/main/Himnos.json?t=" + new Date().getTime(); // Cache-busting
+    let himnos = null;
+    let currentHymn = null;
+    let currentAudio = null;
+
+    async function loadHymns() {
+      try {
+        const res = await fetch(url);
+        himnos = await res.json();
+        showHymns();
+      } catch (e) {
+        document.getElementById("content").innerText = "⚠️ Error al cargar los himnos";
+        console.error(e);
+      }
+    }
+
+    function showHymns() {
+      const content = document.getElementById("content");
+      content.innerHTML = `
+        <h2>Lista de Himnos</h2>
+        <ul>
+          ${himnos.map(h => `
+            <li>
+              <a href="#" class="hymn-link" onclick="showHymn(${h.indice})">
+                ${h.indice} - ${h.titulo}
+              </a>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+    }
+
+    function showHymn(indice) {
+      currentHymn = himnos.find(h => h.indice === indice);
+      const content = document.getElementById("content");
+      const letraFormateada = currentHymn.letra.replace(/\\n/g, "\n");
+
+      // Pausar audio anterior
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = "";
+        currentAudio.load();
+      }
+
+      // Limpiar contenido
+      content.innerHTML = `
+        <a href="#" class="back" onclick="showHymns()">← Volver</a>
+        <h2>${currentHymn.indice} - ${currentHymn.titulo}</h2>
+        <div class="hymn-lyrics">${letraFormateada}</div>
+      `;
+
+      // Crear reproductor nuevo
+      if (currentHymn.audio && currentHymn.audio.trim() !== "") {
+        currentAudio = document.createElement("audio");
+        currentAudio.controls = true;
+
+        const source = document.createElement("source");
+        source.src = currentHymn.audio;
+        source.type = "audio/mpeg";
+
+        currentAudio.appendChild(source);
+        content.appendChild(currentAudio);
+        currentAudio.load();
+      } else {
+        const noAudio = document.createElement("div");
+        noAudio.className = "no-audio";
+        noAudio.innerText = "Audio no disponible";
+        content.appendChild(noAudio);
+      }
+    }
+
+    loadHymns();
+  </script>
+</body>
+</html>

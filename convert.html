@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>GitHub a enlace directo</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .container {
+        background-color: #fff;
+        padding: 25px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        text-align: center;
+        width: 450px;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    input[type="text"] {
+        width: 80%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+    }
+
+    button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+        margin-left: 5px;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    .result-box {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px dashed #007bff;
+        border-radius: 5px;
+        background-color: #e9f0ff;
+        word-break: break-all;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Convertidor de GitHub a enlace directo</h2>
+
+    <input type="text" id="githubUrl" placeholder="Pega aquí la URL de GitHub">
+    <button onclick="convertir()">Convertir</button>
+
+    <div class="result-box" id="resultBox">
+        <a id="directLink" href="#" target="_blank">---</a>
+    </div>
+    <button onclick="copiar()">Copiar enlace</button>
+</div>
+
+<script>
+function convertir() {
+    let url = document.getElementById('githubUrl').value.trim();
+    if(url.includes("github.com") && url.includes("/blob/")) {
+        let directo = url.replace("https://github.com/", "https://raw.githubusercontent.com/")
+                         .replace("/blob/", "/");
+        let link = document.getElementById('directLink');
+        link.href = directo;
+        link.textContent = directo;
+    } else {
+        alert("Ingresa un enlace de GitHub válido que contenga /blob/");
+    }
+}
+
+function copiar() {
+    let link = document.getElementById('directLink').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+        alert("¡Enlace copiado al portapapeles!");
+    }).catch(err => {
+        alert("Error al copiar: " + err);
+    });
+}
+</script>
+
+</body>
+</html>
